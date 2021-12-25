@@ -1,6 +1,8 @@
 package me.wobblyyyy.notlinq;
 
 import java.util.Collection;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -14,6 +16,10 @@ public interface ICollection<E> extends IIterable<E>, Collection<E> {
         }
 
         return collection;
+    }
+
+    static <T> ICollection<T> fromCollection(Collection<T> collection) {
+        return new ReferenceCollection<>(collection);
     }
 
     default ICollection<E> where(Predicate<E> predicate) {
@@ -280,5 +286,128 @@ public interface ICollection<E> extends IIterable<E>, Collection<E> {
         }
 
         return map;
+    }
+
+    default int[] unboxInt() {
+        int[] values = new int[this.size()];
+        int i = 0;
+        for (E e : this) {
+            values[i] = (int) e;
+            i++;
+        }
+        return values;
+    }
+
+    default double[] unboxDouble() {
+        double[] values = new double[this.size()];
+        int i = 0;
+        for (E e : this) {
+            values[i] = (double) e;
+            i++;
+        }
+        return values;
+    }
+
+    default float[] unboxFloat() {
+        float[] values = new float[this.size()];
+        int i = 0;
+        for (E e : this) {
+            values[i] = (float) e;
+            i++;
+        }
+        return values;
+    }
+
+    default char[] unboxChar() {
+        char[] values = new char[this.size()];
+        int i = 0;
+        for (E e : this) {
+            values[i] = (char) e;
+            i++;
+        }
+        return values;
+    }
+
+    default byte[] unboxByte() {
+        byte[] values = new byte[this.size()];
+        byte i = 0;
+        for (E e : this) {
+            values[i] = (byte) e;
+            i++;
+        }
+        return values;
+    }
+
+    default boolean[] unboxBoolean() {
+        boolean[] values = new boolean[this.size()];
+        int i = 0;
+        for (E e : this) {
+            values[i] = (boolean) e;
+            i++;
+        }
+        return values;
+    }
+
+    default boolean all(Predicate<E> predicate) {
+        for (E e : this) {
+            if (!predicate.test(e)) return false;
+        }
+        return true;
+    }
+
+    default ICollection<E> intersect(ICollection<E> that) {
+        ICollection<E> collection = new LinqList<>(this.size());
+        for (E e : this) {
+            if (that.contains(e)) collection.add(e);
+        }
+        return collection;
+    }
+
+    default boolean sequenceEqual(ICollection<E> collection) {
+        IList<E> list1 = new LinqList<>(this);
+        IList<E> list2 = new LinqList<>(collection);
+        if (list1.size() != list2.size()) {
+            throw new IllegalArgumentException(
+                    "Collections must have same length!"
+            );
+        }
+        for (int i = 0; i < list1.size(); i++) {
+            if (!list1.get(i).equals(list2.get(i))) return false;
+        }
+        return true;
+    }
+
+    default Ref<ICollection<E>> ref() {
+        return new Ref<>(this);
+    }
+
+    default AtomicReference<ICollection<E>> atomicReference() {
+        return new AtomicReference<>(this);
+    }
+
+    default void executeInSync(Consumer<E> consumer) {
+        forEach(consumer);
+    }
+
+    default void executeInParallel(Consumer<E> consumer) {
+        ICollection<Thread> threads = new LinqList<>(this.size());
+        for (E e : this) {
+            Thread thread = new Thread(() -> consumer.accept(e));
+            threads.add(thread);
+            thread.start();
+        }
+        while (threads.any(Thread::isAlive)) Thread.onSpinWait();
+    }
+
+    default ICollection<E> take(int count) {
+        ICollection<E> collection = new LinqList<>(count);
+        for (int i = count - 1; i < size(); i++) {
+            collection.add(elementAt(i));
+        }
+        return collection;
+    }
+
+    default ReferenceCollection<E> reference() {
+        return new ReferenceCollection<>(this);
     }
 }

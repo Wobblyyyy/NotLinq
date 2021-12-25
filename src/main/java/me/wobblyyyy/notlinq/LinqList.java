@@ -20,4 +20,13 @@ public class LinqList<E> extends ArrayList<E> implements IList<E> {
     public LinqList(E[] elements) {
         super(Arrays.asList(elements));
     }
+
+    @Override
+    public ICollection<E> take(int count) {
+        ICollection<E> collection = new LinqList<>(count);
+        for (int i = count - 1; i < size(); i++) {
+            collection.add(get(i));
+        }
+        return collection;
+    }
 }
