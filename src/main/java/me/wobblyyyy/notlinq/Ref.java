@@ -1,5 +1,7 @@
 package me.wobblyyyy.notlinq;
 
+import java.util.concurrent.atomic.AtomicReference;
+
 public class Ref<E> {
     private E value = null;
 
@@ -21,6 +23,14 @@ public class Ref<E> {
 
     public boolean exists() {
         return value != null;
+    }
+
+    public AtomicReference<E> atomicReference() {
+        return new AtomicReference<>(value);
+    }
+
+    public Reference<E> reference() {
+        return new Reference<>(value);
     }
 
     @Override

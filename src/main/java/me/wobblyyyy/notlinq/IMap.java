@@ -9,6 +9,10 @@ public interface IMap<K, V> extends Map<K, V> {
         return new ReferenceMap<>(map);
     }
 
+    static <T, U> IMap<T, U> of(Map<T, U> map) {
+        return new ReferenceMap<>(map);
+    }
+
     default boolean tryGetValue(K key,
                                 Ref<V> output) {
         V value = get(key);
@@ -107,9 +111,5 @@ public interface IMap<K, V> extends Map<K, V> {
 
     default ICollection<Map.Entry<K, V>> entryCollection() {
         return new ReferenceCollection<>(entrySet());
-    }
-
-    default ReferenceMap<K, V> reference() {
-        return new ReferenceMap<>(this);
     }
 }

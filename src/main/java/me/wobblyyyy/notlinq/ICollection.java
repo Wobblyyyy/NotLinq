@@ -22,6 +22,10 @@ public interface ICollection<E> extends IIterable<E>, Collection<E> {
         return new ReferenceCollection<>(collection);
     }
 
+    static <T> ICollection<T> of(Collection<T> collection) {
+        return new ReferenceCollection<>(collection);
+    }
+
     default ICollection<E> where(Predicate<E> predicate) {
         LinqList<E> list = new LinqList<>(this.size());
         this.stream().filter(predicate).forEach(list::add);
@@ -242,10 +246,14 @@ public interface ICollection<E> extends IIterable<E>, Collection<E> {
         ICollection<E> collection = new LinqList<>(this.size());
 
         for (E e : this) {
-            if (!predicate.test(e)) collection.add(e);
+            if (predicate.test(e)) collection.add(e);
         }
 
-        return collection;
+        for (E e : collection) {
+            remove(e);
+        }
+
+        return this;
     }
 
     default ICollection<E> except(Predicate<E> predicate) {
@@ -381,7 +389,7 @@ public interface ICollection<E> extends IIterable<E>, Collection<E> {
         return new Ref<>(this);
     }
 
-    default AtomicReference<ICollection<E>> atomicReference() {
+    default AtomicReference<ICollection<E>> getCollectionReference() {
         return new AtomicReference<>(this);
     }
 
@@ -405,9 +413,5 @@ public interface ICollection<E> extends IIterable<E>, Collection<E> {
             collection.add(elementAt(i));
         }
         return collection;
-    }
-
-    default ReferenceCollection<E> reference() {
-        return new ReferenceCollection<>(this);
     }
 }
