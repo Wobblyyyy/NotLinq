@@ -296,66 +296,6 @@ public interface ICollection<E> extends IIterable<E>, Collection<E> {
         return map;
     }
 
-    default int[] unboxInt() {
-        int[] values = new int[this.size()];
-        int i = 0;
-        for (E e : this) {
-            values[i] = (int) e;
-            i++;
-        }
-        return values;
-    }
-
-    default double[] unboxDouble() {
-        double[] values = new double[this.size()];
-        int i = 0;
-        for (E e : this) {
-            values[i] = (double) e;
-            i++;
-        }
-        return values;
-    }
-
-    default float[] unboxFloat() {
-        float[] values = new float[this.size()];
-        int i = 0;
-        for (E e : this) {
-            values[i] = (float) e;
-            i++;
-        }
-        return values;
-    }
-
-    default char[] unboxChar() {
-        char[] values = new char[this.size()];
-        int i = 0;
-        for (E e : this) {
-            values[i] = (char) e;
-            i++;
-        }
-        return values;
-    }
-
-    default byte[] unboxByte() {
-        byte[] values = new byte[this.size()];
-        byte i = 0;
-        for (E e : this) {
-            values[i] = (byte) e;
-            i++;
-        }
-        return values;
-    }
-
-    default boolean[] unboxBoolean() {
-        boolean[] values = new boolean[this.size()];
-        int i = 0;
-        for (E e : this) {
-            values[i] = (boolean) e;
-            i++;
-        }
-        return values;
-    }
-
     default boolean all(Predicate<E> predicate) {
         for (E e : this) {
             if (!predicate.test(e)) return false;
@@ -404,7 +344,15 @@ public interface ICollection<E> extends IIterable<E>, Collection<E> {
             threads.add(thread);
             thread.start();
         }
-        while (threads.any(Thread::isAlive)) Thread.onSpinWait();
+
+        // onSpinWait is optimal, but to support JDK 8 we can't use it
+        // while (threads.any(Thread::isAlive)) Thread.onSpinWait();
+        try {
+            while (threads.any(Thread::isAlive))
+                Thread.sleep(10);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     default ICollection<E> take(int count) {
